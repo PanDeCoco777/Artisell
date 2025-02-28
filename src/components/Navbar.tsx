@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
+  User,
+  Heart,
+  Package,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
@@ -9,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
 
 interface NavbarProps {
@@ -27,6 +36,8 @@ const Navbar = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
@@ -38,6 +49,19 @@ const Navbar = ({
 
   const handleAuthModalClose = () => {
     setIsAuthModalOpen(false);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would navigate to search results page with the query
+    console.log(`Searching for: ${searchQuery}`);
+    setIsSearchOpen(false);
+  };
+
+  const handleLogout = () => {
+    // In a real app, you would implement logout logic here
+    console.log("Logout clicked");
+    navigate("/");
   };
 
   return (
@@ -77,15 +101,20 @@ const Navbar = ({
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
-              <div className="flex items-center space-x-2">
+              <form
+                onSubmit={handleSearch}
+                className="flex items-center space-x-2"
+              >
                 <Search className="h-5 w-5 text-gray-500" />
                 <Input
                   placeholder="Search for artwork, artists, or styles..."
                   className="flex-1"
                   autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <Button type="submit">Search</Button>
-              </div>
+              </form>
             </DialogContent>
           </Dialog>
 
@@ -98,28 +127,55 @@ const Navbar = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Link to="/profile" className="w-full">
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/profile"
+                    className="w-full flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/orders" className="w-full">
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/profile/orders"
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Package className="h-4 w-4" />
                     My Orders
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/favorites" className="w-full">
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/favorites"
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Heart className="h-4 w-4" />
                     Favorites
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <button
-                    className="w-full text-left"
-                    onClick={() => console.log("Logout clicked")}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
                   >
-                    Logout
-                  </button>
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -167,15 +223,20 @@ const Navbar = ({
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 absolute w-full left-0 shadow-lg">
           <div className="container mx-auto py-4 px-4 flex flex-col space-y-4">
-            <div className="flex items-center border rounded-md overflow-hidden">
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center border rounded-md overflow-hidden"
+            >
               <Input
                 placeholder="Search..."
                 className="border-0 focus:ring-0"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" type="submit">
                 <Search className="h-5 w-5" />
               </Button>
-            </div>
+            </form>
             <Link
               to="/"
               className="py-2 px-4 hover:bg-gray-100 rounded-md"
@@ -201,18 +262,51 @@ const Navbar = ({
               <>
                 <Link
                   to="/profile"
-                  className="py-2 px-4 hover:bg-gray-100 rounded-md"
+                  className="py-2 px-4 hover:bg-gray-100 rounded-md flex items-center gap-2"
                   onClick={toggleMenu}
                 >
+                  <User className="h-4 w-4" />
                   Profile
                 </Link>
+                <Link
+                  to="/profile/orders"
+                  className="py-2 px-4 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                  onClick={toggleMenu}
+                >
+                  <Package className="h-4 w-4" />
+                  My Orders
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="py-2 px-4 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                  onClick={toggleMenu}
+                >
+                  <Heart className="h-4 w-4" />
+                  Favorites
+                </Link>
                 <button
-                  className="py-2 px-4 text-left hover:bg-gray-100 rounded-md"
+                  className="py-2 px-4 text-left hover:bg-gray-100 rounded-md flex items-center gap-2 w-full"
                   onClick={() => {
-                    console.log("Logout clicked");
+                    handleLogout();
                     toggleMenu();
                   }}
                 >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
                   Logout
                 </button>
               </>

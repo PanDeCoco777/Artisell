@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -22,9 +23,22 @@ const AuthModal = ({
   defaultTab = "login",
 }: AuthModalProps) => {
   const [activeTab, setActiveTab] = useState<"login" | "register">(defaultTab);
+  const navigate = useNavigate();
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as "login" | "register");
+  };
+
+  const handleLoginSuccess = () => {
+    // Close the modal and redirect to home page
+    onClose();
+    navigate("/");
+  };
+
+  const handleRegisterSuccess = () => {
+    // Close the modal and redirect to home page
+    onClose();
+    navigate("/");
   };
 
   return (
@@ -58,7 +72,10 @@ const AuthModal = ({
               <LoginForm
                 onSubmit={(values) => {
                   console.log("Login submitted:", values);
-                  // Handle login logic here
+                  // Simulate successful login
+                  setTimeout(() => {
+                    handleLoginSuccess();
+                  }, 1000);
                 }}
               />
             </TabsContent>
@@ -66,7 +83,10 @@ const AuthModal = ({
               <RegisterForm
                 onSubmit={(values) => {
                   console.log("Registration submitted:", values);
-                  // Handle registration logic here
+                  // Simulate successful registration
+                  setTimeout(() => {
+                    handleRegisterSuccess();
+                  }, 1000);
                 }}
               />
             </TabsContent>

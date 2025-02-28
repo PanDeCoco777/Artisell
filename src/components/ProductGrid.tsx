@@ -16,6 +16,7 @@ interface ProductGridProps {
   products?: Product[];
   isLoading?: boolean;
   onAddToCart?: (id: string) => void;
+  onViewDetails?: (id: string) => void;
 }
 
 const ProductGrid = ({
@@ -95,6 +96,7 @@ const ProductGrid = ({
   ],
   isLoading = false,
   onAddToCart = () => {},
+  onViewDetails = () => {},
 }: ProductGridProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 8;
@@ -153,6 +155,7 @@ const ProductGrid = ({
             price={product.price}
             region={product.region}
             onAddToCart={onAddToCart}
+            onViewDetails={() => onViewDetails(product.id)}
           />
         ))}
       </div>

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import FeaturedCarousel from "./FeaturedCarousel";
 import FilterSection from "./FilterSection";
@@ -6,9 +7,14 @@ import ProductGrid from "./ProductGrid";
 import Footer from "./Footer";
 import AuthModal from "./auth/AuthModal";
 
+interface CartItem {
+  id: string;
+  quantity: number;
+}
+
 const Home = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<string[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
     "Painting",
@@ -19,6 +25,24 @@ const Home = () => {
   // Mock user state - in a real app, this would come from authentication context
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest User");
+  const navigate = useNavigate();
+
+  // Load cart from localStorage on initial render
+  useEffect(() => {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error parsing cart from localStorage", e);
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true);
@@ -29,8 +53,26 @@ const Home = () => {
   };
 
   const handleAddToCart = (productId: string) => {
-    setCartItems((prev) => [...prev, productId]);
-    // In a real app, you would also update the cart in a database or context
+    setCartItems((prev) => {
+      const existingItem = prev.find((item) => item.id === productId);
+      if (existingItem) {
+        return prev.map((item) =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      } else {
+        return [...prev, { id: productId, quantity: 1 }];
+      }
+    });
+  };
+
+  const handleRemoveFromCart = (productId: string) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== productId));
+  };
+
+  const handleViewProduct = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   const handleSearch = (query: string) => {
@@ -59,19 +101,17 @@ const Home = () => {
       <Navbar
         isLoggedIn={isLoggedIn}
         userName={userName}
-        cartItemCount={cartItems.length}
+        cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onAuthModalOpen={handleAuthModalOpen}
       />
 
       {/* Main Content */}
       <main className="flex-grow pt-20">
-        {" "}
-        {/* pt-20 to account for fixed navbar */}
         <div className="container mx-auto px-4 py-8 space-y-8">
           {/* Featured Carousel */}
           <section className="mb-12">
             <FeaturedCarousel
-              onViewArtwork={(id) => console.log(`View artwork ${id}`)}
+              onViewArtwork={handleViewProduct}
               onAddToFavorites={(id) => console.log(`Add to favorites ${id}`)}
             />
           </section>
@@ -89,7 +129,10 @@ const Home = () => {
           {/* Product Grid */}
           <section>
             <h2 className="text-2xl font-bold mb-6">Browse Filipino Artwork</h2>
-            <ProductGrid onAddToCart={handleAddToCart} />
+            <ProductGrid
+              onAddToCart={handleAddToCart}
+              onViewDetails={handleViewProduct}
+            />
           </section>
         </div>
       </main>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, ShoppingCart } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface ArtworkItem {
   id: string;
@@ -25,6 +26,7 @@ interface FeaturedCarouselProps {
   artworks?: ArtworkItem[];
   onViewArtwork?: (id: string) => void;
   onAddToFavorites?: (id: string) => void;
+  onAddToCart?: (id: string) => void;
 }
 
 const FeaturedCarousel = ({
@@ -68,6 +70,7 @@ const FeaturedCarousel = ({
   ],
   onViewArtwork = () => {},
   onAddToFavorites = () => {},
+  onAddToCart = () => {},
 }: FeaturedCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [api, setApi] = useState<any>(null);
@@ -86,7 +89,14 @@ const FeaturedCarousel = ({
 
   const handleAddToFavorites = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onAddToFavorites(id);
+  };
+
+  const handleAddToCart = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onAddToCart(id);
   };
 
   return (
@@ -103,8 +113,9 @@ const FeaturedCarousel = ({
           <CarouselContent>
             {artworks.map((artwork) => (
               <CarouselItem key={artwork.id}>
-                <div
-                  className="relative overflow-hidden rounded-lg cursor-pointer"
+                <Link
+                  to={`/product/${artwork.id}`}
+                  className="relative overflow-hidden rounded-lg cursor-pointer block"
                   onClick={() => handleViewArtwork(artwork.id)}
                 >
                   <div className="relative h-[400px] w-full overflow-hidden rounded-lg">
@@ -113,7 +124,7 @@ const FeaturedCarousel = ({
                       alt={artwork.title}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 flex gap-2">
                       <Button
                         variant="outline"
                         size="icon"
@@ -121,6 +132,14 @@ const FeaturedCarousel = ({
                         onClick={(e) => handleAddToFavorites(artwork.id, e)}
                       >
                         <Heart className="h-5 w-5 text-rose-500" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90"
+                        onClick={(e) => handleAddToCart(artwork.id, e)}
+                      >
+                        <ShoppingCart className="h-5 w-5 text-primary" />
                       </Button>
                     </div>
                     <Badge className="absolute top-4 left-4 bg-primary/90 hover:bg-primary">
@@ -142,14 +161,27 @@ const FeaturedCarousel = ({
                     <p className="mt-2 text-gray-700 line-clamp-2">
                       {artwork.description}
                     </p>
-                    <Button
-                      className="mt-4 w-full"
-                      onClick={() => handleViewArtwork(artwork.id)}
-                    >
-                      View Artwork
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleViewArtwork(artwork.id);
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 flex items-center justify-center gap-2"
+                        onClick={(e) => handleAddToCart(artwork.id, e)}
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        Add to Cart
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
